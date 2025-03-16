@@ -1,0 +1,87 @@
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 220 13% 18%;
+    --foreground: 210 40% 98%;
+
+    --card: 222 13% 23%;
+    --card-foreground: 210 40% 98%;
+
+    --popover: 222 13% 23%;
+    --popover-foreground: 210 40% 98%;
+
+    --primary: 25 95% 53%;
+    --primary-foreground: 210 40% 98%;
+
+    --secondary: 210 40% 96.1%;
+    --secondary-foreground: 222.2 47.4% 11.2%;
+
+    --muted: 217 10% 30%;
+    --muted-foreground: 215 20.2% 75.1%;
+
+    --accent: 25 95% 53%;
+    --accent-foreground: 210 40% 98%;
+
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 217 19% 27%;
+    --input: 217 19% 27%;
+    --ring: 222.2 84% 4.9%;
+
+    --radius: 0.5rem;
+
+    --sidebar-background: 220 13% 13%;
+    --sidebar-foreground: 210 40% 98%;
+    --sidebar-muted: 217 10% 25%;
+    --sidebar-muted-foreground: 215 20.2% 70%; 
+    --sidebar-accent: 25 95% 53%;
+    --sidebar-accent-foreground: 210 40% 98%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+    font-feature-settings: "rlig" 1, "calt" 1;
+  }
+
+  /* Custom scrollbar */
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+
+  ::-webkit-scrollbar-track {
+    @apply bg-transparent;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    @apply bg-muted rounded-full;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    @apply bg-muted/80;
+  }
+}
+
+@layer components {
+  .glass-card {
+    @apply bg-card/80 backdrop-blur-md border border-white/10 shadow-lg;
+  }
+  
+  .sidebar-item {
+    @apply flex items-center gap-3 text-sidebar-foreground/80 hover:text-sidebar-foreground py-2 px-4 rounded-md transition-all duration-200 hover:bg-sidebar-muted;
+  }
+  
+  .sidebar-item.active {
+    @apply bg-sidebar-muted text-sidebar-foreground;
+  }
+}
