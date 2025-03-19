@@ -1,13 +1,13 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import AppLayout from "./components/layout/AppLayout";
 import HomePage from "./pages/HomePage";
 import ChatPage from "./pages/ChatPage";
 import WhiteboardPage from "./pages/WhiteboardPage";
+import CodeEditorPage from "./pages/CodeEditorPage";
 import NotFoundPage from "./pages/NotFoundPage";
 
 const queryClient = new QueryClient();
@@ -30,6 +30,7 @@ const App = () => (
             </AppLayout>
           } />
           <Route path="/whiteboard" element={<WhiteboardPage />} />
+          <Route path="/code" element={<CodeEditorPage />} />
           <Route path="*" element={<NotFoundPage />} />
         </Routes>
       </BrowserRouter>

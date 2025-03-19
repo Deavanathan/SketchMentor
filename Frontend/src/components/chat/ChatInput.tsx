@@ -1,4 +1,3 @@
-
 import React, { useState, useRef, useEffect } from 'react';
 import { SendHorizontal, Plus, FileText, ImageIcon, Loader2, Video, PenLine, Calculator, Code } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -117,6 +116,49 @@ const ChatInput: React.FC<ChatInputProps> = ({ onSendMessage, isProcessing, onCo
       const interactiveMatch = message.match(/@interactive\s+(.*?)(?:\s|$)/);
       const codeVisualMatch = message.match(/@codevisual\s+(.*?)(?:\s|$)/);
       
+      // Log data for Postman testing based on command
+      if (videoMatch) {
+        const videoData = {
+          query: videoMatch[1] || '',
+          timestamp: new Date().toISOString()
+        };
+        console.log('VIDEO COMMAND DATA (copy this):');
+        console.log(JSON.stringify(videoData, null, 2));
+        console.log('Would send to: http://localhost:8080/video');
+      } 
+      
+      if (visualMatch) {
+        const visualData = {
+          query: visualMatch[1] || '',
+          timestamp: new Date().toISOString()
+        };
+        console.log('VISUAL COMMAND DATA (copy this):');
+        console.log(JSON.stringify(visualData, null, 2));
+        console.log('Would send to: http://localhost:8080/visual');
+      }
+      
+      if (interactiveMatch) {
+        const interactiveData = {
+          query: interactiveMatch[1] || '',
+          timestamp: new Date().toISOString()
+        };
+        console.log('INTERACTIVE COMMAND DATA (copy this):');
+        console.log(JSON.stringify(interactiveData, null, 2));
+        console.log('Would send to: http://localhost:8080/interactive');
+      }
+      
+      // Handle CodeVisualizer component
+      if (codeVisualMatch) {
+        const codeVisualizerData = {
+          query: codeVisualMatch[1] || '',
+          component: 'src/components/chat/CodeVisualizer.tsx',
+          timestamp: new Date().toISOString()
+        };
+        console.log('CODE VISUALIZER COMPONENT DATA (copy this):');
+        console.log(JSON.stringify(codeVisualizerData, null, 2));
+        console.log('Would use component: src/components/chat/CodeVisualizer.tsx');
+      }
+      
       if ((videoMatch || visualMatch || interactiveMatch || codeVisualMatch) && onCommandSelect) {
         if (videoMatch) {
           onCommandSelect('video', videoMatch[1] || '');
@@ -137,7 +179,7 @@ const ChatInput: React.FC<ChatInputProps> = ({ onSendMessage, isProcessing, onCo
       }
     }
   };
-  
+
   const handleCommandSelect = (command: string) => {
     if (commandStartIndex >= 0) {
       const newMessage = message.substring(0, commandStartIndex) + command + ' ';
@@ -201,7 +243,7 @@ const ChatInput: React.FC<ChatInputProps> = ({ onSendMessage, isProcessing, onCo
           </div>
         )}
         
-        <div className="flex items-end">
+        <div className="flex items-center">
           <button 
             type="button" 
             onClick={() => setIsExpanded(!isExpanded)}
@@ -218,7 +260,7 @@ const ChatInput: React.FC<ChatInputProps> = ({ onSendMessage, isProcessing, onCo
               onFocus={() => setIsExpanded(true)}
               placeholder="Ask anything... (Try @video, @visual, @interactive, or @codevisual)"
               rows={1}
-              className="flex-1 resize-none bg-transparent border-0 focus:ring-0 focus:outline-none py-3 px-2 text-foreground placeholder:text-muted-foreground w-full"
+              className="flex-1 resize-none bg-transparent border-0 focus:ring-0 focus:outline-none py-2 px-2 text-foreground placeholder:text-muted-foreground w-full"
               style={{ maxHeight: '120px' }}
               onKeyDown={(e) => {
                 if (e.key === 'Enter' && !e.shiftKey) {

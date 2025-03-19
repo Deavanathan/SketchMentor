@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { cn } from '@/lib/utils';
 import DrawingCanvas from '@/components/whiteboard/DrawingCanvas';
+import Navigation from '@/components/navigation/Navigation';
 import { toast } from 'sonner';
 
 interface Message {
@@ -16,7 +17,6 @@ interface Message {
 }
 
 const WhiteboardPage = () => {
-  const [activeTab, setActiveTab] = useState<'whiteboard' | 'code'>('whiteboard');
   const [activeTool, setActiveTool] = useState<'select' | 'hand' | 'pen' | 'square' | 'circle' | 'text'>('select');
   const [activeColor, setActiveColor] = useState('#000000');
   const [strokeWidth, setStrokeWidth] = useState(2);
@@ -54,7 +54,10 @@ const WhiteboardPage = () => {
       type: 'user',
       content: currentMessage,
       command: currentMessage.includes('@whiteboard') ? '@whiteboard' : 
-               currentMessage.includes('@codevisual') ? '@codevisual' : undefined
+               currentMessage.includes('@codevisual') ? '@codevisual' :
+               currentMessage.includes('@video') ? '@video' :
+               currentMessage.includes('@visual') ? '@visual' :
+               currentMessage.includes('@interactive') ? '@interactive' : undefined
     };
     
     setMessages(prev => [...prev, userMessage]);
@@ -71,13 +74,25 @@ const WhiteboardPage = () => {
       
       if (userMessage.command === '@whiteboard') {
         if (canvasDataUrl) {
+          // Create data to send to backend
+          const whiteboardData = {
+            image: canvasDataUrl,
+            query: currentMessage.replace('@whiteboard', '').trim()
+          };
+          
+          // Log data for Postman testing
+          console.log('POSTMAN TEST DATA (copy this):');
+          console.log(JSON.stringify(whiteboardData, null, 2));
+          
+          // Show success message without actually sending
+          toast.success('Whiteboard data logged to console (check DevTools)');
+          
           aiResponse = {
             type: 'ai',
             content: `I've analyzed your whiteboard drawing. Your prompt was: "${currentMessage.replace('@whiteboard', '').trim()}"`,
             command: '@whiteboard',
             imageData: canvasDataUrl
           };
-          toast.success('Whiteboard content sent to AI');
         } else {
           aiResponse = {
             type: 'ai',
@@ -132,8 +147,7 @@ function draw() {
     fill(0);
     textSize(24);
     text("Sorting Complete!", width / 2 - 70, 50);
-  }
-}`;
+ }`;
 
         aiResponse = {
           type: 'ai',
@@ -142,10 +156,61 @@ function draw() {
           code: sampleCode
         };
         toast.success('Code visualization request processed');
+      } else if (userMessage.command === '@video') {
+        // Handle video command
+        const videoData = {
+          query: currentMessage.replace('@video', '').trim(),
+          timestamp: new Date().toISOString()
+        };
+        
+        console.log('VIDEO COMMAND DATA (copy this):');
+        console.log(JSON.stringify(videoData, null, 2));
+        console.log('Would send to: http://localhost:8080/video');
+        
+        aiResponse = {
+          type: 'ai',
+          content: `I've processed your video request. Your prompt was: "${currentMessage.replace('@video', '').trim()}"`,
+          command: '@video'
+        };
+        toast.success('Video request processed');
+      } else if (userMessage.command === '@visual') {
+        // Handle visual command
+        const visualData = {
+          query: currentMessage.replace('@visual', '').trim(),
+          timestamp: new Date().toISOString()
+        };
+        
+        console.log('VISUAL COMMAND DATA (copy this):');
+        console.log(JSON.stringify(visualData, null, 2));
+        console.log('Would send to: http://localhost:8080/visual');
+        
+        aiResponse = {
+          type: 'ai',
+          content: `I've processed your visual request. Your prompt was: "${currentMessage.replace('@visual', '').trim()}"`,
+          command: '@visual'
+        };
+        toast.success('Visual request processed');
+      } else if (userMessage.command === '@interactive') {
+        // Handle interactive command
+        const interactiveData = {
+          query: currentMessage.replace('@interactive', '').trim(),
+          timestamp: new Date().toISOString()
+        };
+        
+        console.log('INTERACTIVE COMMAND DATA (copy this):');
+        console.log(JSON.stringify(interactiveData, null, 2));
+        console.log('Would send to: http://localhost:8080/interactive');
+        
+        aiResponse = {
+          type: 'ai',
+          content: `I've processed your interactive request. Your prompt was: "${currentMessage.replace('@interactive', '').trim()}"`,
+          command: '@interactive'
+        };
+        toast.success('Interactive request processed');
       } else {
         aiResponse = {
           type: 'ai',
-          content: `I received your message: "${currentMessage}". Try using @whiteboard to analyze your drawing or @codevisual to visualize code.`
+          content: `I received your message: "${currentMessage}". Try using @whiteboard to analyze your drawing, @codevisual to visualize code, @video for video content, @visual for visual content, or @interactive for interactive content.`
         };
       }
       
@@ -205,30 +270,8 @@ function draw() {
         </div>
       </header>
 
-      <div className="flex border-b border-[#333]">
-        <button 
-          onClick={() => setActiveTab('code')}
-          className={cn(
-            "flex items-center gap-2 px-5 py-3 border-b-2 transition-colors",
-            activeTab === 'code' ? "border-primary text-primary" : "border-transparent text-gray-400 hover:text-white"
-          )}
-        >
-          <Code size={16} />
-          <span>Code</span>
-        </button>
-        <button 
-          onClick={() => setActiveTab('whiteboard')}
-          className={cn(
-            "flex items-center gap-2 px-5 py-3 border-b-2 transition-colors",
-            activeTab === 'whiteboard' ? "border-primary text-primary" : "border-transparent text-gray-400 hover:text-white"
-          )}
-        >
-          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
-          </svg>
-          <span>Whiteboard</span>
-        </button>
-      </div>
+      {/* Navigation */}
+      <Navigation />
 
       <div className="flex flex-1 overflow-hidden">
         <div className="flex-1 flex flex-col relative">
@@ -240,7 +283,7 @@ function draw() {
                     className="text-gray-400 hover:text-gray-600 mb-2"
                     onClick={() => setShowColorPicker(false)}
                   >
-                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-full h-full">
                       <line x1="18" y1="6" x2="6" y2="18"></line>
                       <line x1="6" y1="6" x2="18" y2="18"></line>
                     </svg>
@@ -563,7 +606,7 @@ function draw() {
                 </button>
               </div>
               <div className="text-xs text-gray-500 text-center">
-                Use @whiteboard to analyze your drawing or @codevisual for code visualizations
+                Use @whiteboard to analyze your drawing, @codevisual to visualize code, @video for video content, @visual for visual content, or @interactive for interactive content
               </div>
             </form>
           </div>
