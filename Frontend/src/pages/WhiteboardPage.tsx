@@ -46,6 +46,22 @@ const WhiteboardPage = () => {
     setCanvasDataUrl(dataUrl);
   };
   
+  const sendData = async (endpoint: string, data: any) => {
+    try {
+      const response = await fetch(`http://localhost:8081/${endpoint}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data),
+      });
+      const result = await response.json();
+      console.log('Success:', result);
+    } catch (error) {
+      console.error('Error:', error);
+    }
+  };
+
   const handleMessageSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!currentMessage.trim()) return;
@@ -80,19 +96,8 @@ const WhiteboardPage = () => {
             query: currentMessage.replace('@whiteboard', '').trim()
           };
           
-          // Log data for Postman testing
-          console.log('POSTMAN TEST DATA (copy this):');
-          console.log(JSON.stringify(whiteboardData, null, 2));
-          
-          // Show success message without actually sending
-          toast.success('Whiteboard data logged to console (check DevTools)');
-          
-          aiResponse = {
-            type: 'ai',
-            content: `I've analyzed your whiteboard drawing. Your prompt was: "${currentMessage.replace('@whiteboard', '').trim()}"`,
-            command: '@whiteboard',
-            imageData: canvasDataUrl
-          };
+          sendData('whiteboard', whiteboardData);
+          toast.success('Whiteboard data sent');
         } else {
           aiResponse = {
             type: 'ai',
@@ -116,7 +121,7 @@ function draw() {
   let barWidth = width / arr.length;
 
   // Draw bars
-  for (let k = 0; k < arr.length; k++) {
+  for (let k = 0; k <arr.length; k++) {
     if (sorting && (k === j || k === j + 1)) {
       fill(255, 100, 100); // Highlight bars being compared
     } else {
@@ -159,53 +164,26 @@ function draw() {
       } else if (userMessage.command === '@video') {
         // Handle video command
         const videoData = {
-          query: currentMessage.replace('@video', '').trim(),
-          timestamp: new Date().toISOString()
+          query: currentMessage.replace('@video', '').trim()
         };
         
-        console.log('VIDEO COMMAND DATA (copy this):');
-        console.log(JSON.stringify(videoData, null, 2));
-        console.log('Would send to: http://localhost:8080/video');
-        
-        aiResponse = {
-          type: 'ai',
-          content: `I've processed your video request. Your prompt was: "${currentMessage.replace('@video', '').trim()}"`,
-          command: '@video'
-        };
+        sendData('video', videoData);
         toast.success('Video request processed');
       } else if (userMessage.command === '@visual') {
         // Handle visual command
         const visualData = {
-          query: currentMessage.replace('@visual', '').trim(),
-          timestamp: new Date().toISOString()
+          query: currentMessage.replace('@visual', '').trim()
         };
         
-        console.log('VISUAL COMMAND DATA (copy this):');
-        console.log(JSON.stringify(visualData, null, 2));
-        console.log('Would send to: http://localhost:8080/visual');
-        
-        aiResponse = {
-          type: 'ai',
-          content: `I've processed your visual request. Your prompt was: "${currentMessage.replace('@visual', '').trim()}"`,
-          command: '@visual'
-        };
+        sendData('visual', visualData);
         toast.success('Visual request processed');
       } else if (userMessage.command === '@interactive') {
         // Handle interactive command
         const interactiveData = {
-          query: currentMessage.replace('@interactive', '').trim(),
-          timestamp: new Date().toISOString()
+          query: currentMessage.replace('@interactive', '').trim()
         };
         
-        console.log('INTERACTIVE COMMAND DATA (copy this):');
-        console.log(JSON.stringify(interactiveData, null, 2));
-        console.log('Would send to: http://localhost:8080/interactive');
-        
-        aiResponse = {
-          type: 'ai',
-          content: `I've processed your interactive request. Your prompt was: "${currentMessage.replace('@interactive', '').trim()}"`,
-          command: '@interactive'
-        };
+        sendData('interactive', interactiveData);
         toast.success('Interactive request processed');
       } else {
         aiResponse = {
@@ -213,15 +191,17 @@ function draw() {
           content: `I received your message: "${currentMessage}". Try using @whiteboard to analyze your drawing, @codevisual to visualize code, @video for video content, @visual for visual content, or @interactive for interactive content.`
         };
       }
-      
-      setMessages(prev => [...prev, aiResponse]);
+
+      if (aiResponse) {
+        setMessages(prev => [...prev, aiResponse]);
+      }
       
       setTimeout(() => {
         if (chatEndRef.current) {
           chatEndRef.current.scrollIntoView({ behavior: 'smooth' });
         }
       }, 100);
-    }, 1500);
+    }, 500);
   };
   
   const handleClearCanvas = () => {

@@ -54,25 +54,33 @@ const CodeEditor: React.FC<CodeEditorProps> = ({
     // Show success message without actually sending
     toast.success('Code data logged to console (check DevTools)');
     
-    /* 
+    
     // Uncomment when backend is ready
-    fetch('http://localhost:8080/code', {
+    fetch('http://localhost:8081/code', { 
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify(codeData),
     })
-    .then(response => response.json())
+    .then(response => {
+      if (!response.ok) {
+        // Throw an error with more details if the response is not successful
+        return response.text().then(text => {
+          throw new Error(`HTTP error! status: ${response.status}, message: ${text}`);
+        });
+      }
+      return response.json();
+    })
     .then(data => {
       console.log('Success:', data);
       toast.success('Code sent successfully');
     })
     .catch((error) => {
-      console.error('Error:', error);
-      toast.error('Failed to send code');
+      console.error('Detailed Error:', error);
+      toast.error(`Failed to send code: ${error.message}`);
     });
-    */
+  
   };
   
   return (

@@ -1,0 +1,5 @@
+# This file is used internally by FFMPEG.
+file 'file:D:/Temp/AI_MATH_AGENT/media/videos/manim_visualization/480p15/partial_movie_files/PythagoreanTheoremSimple/1185818338_1635359266_223132457.mp4'
+file 'file:D:/Temp/AI_MATH_AGENT/media/videos/manim_visualization/480p15/partial_movie_files/PythagoreanTheoremSimple/624642324_3394500337_4112037136.mp4'
+file 'file:D:/Temp/AI_MATH_AGENT/media/videos/manim_visualization/480p15/partial_movie_files/PythagoreanTheoremSimple/624642324_2618365235_32062029.mp4'
+file 'file:D:/Temp/AI_MATH_AGENT/media/videos/manim_visualization/480p15/partial_movie_files/PythagoreanTheoremSimple/624642324_2552855209_2155856787.mp4'

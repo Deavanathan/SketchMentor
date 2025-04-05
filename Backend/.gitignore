@@ -1,0 +1,11 @@
+# Node.js dependencies
+node_modules/
+Scripts/
+share/
+Lib/
+Include/
+__pycache__/
+# Logs
+*.log
+visualagent_frontend/
+Video to Transcript/

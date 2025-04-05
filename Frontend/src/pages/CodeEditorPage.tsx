@@ -25,6 +25,22 @@ const CodeEditorPage: React.FC = () => {
     setCodeContent(code);
   };
 
+  const sendData = (endpoint: string, data: any) => {
+    // Implement logic to send data to the backend
+    console.log(`Sending data to ${endpoint}:`, data);
+    //Replace with actual backend API call
+    fetch(`http://localhost:8081/${endpoint}`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(data)
+    })
+    .then(response => response.json())
+    .then(data => console.log(data))
+    .catch(error => console.error(error));
+  };
+
   const handleMessageSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!currentMessage.trim()) return;
@@ -62,8 +78,7 @@ const CodeEditorPage: React.FC = () => {
           console.log('POSTMAN TEST DATA (copy this):');
           console.log(JSON.stringify(codeData, null, 2));
           
-          // Show success message without actually sending
-          toast.success('Code data logged to console (check DevTools)');
+          sendData('code', codeData);
           
           aiResponse = {
             type: 'ai',
@@ -87,7 +102,7 @@ const CodeEditorPage: React.FC = () => {
         
         console.log('VIDEO COMMAND DATA (copy this):');
         console.log(JSON.stringify(videoData, null, 2));
-        console.log('Would send to: http://localhost:8080/video');
+        console.log('Would send to: http://localhost:8081/video');
         
         aiResponse = {
           type: 'ai',

@@ -17,7 +17,11 @@ interface ChatInputProps {
   onCommandSelect?: (command: string, message: string) => void;
 }
 
-const ChatInput: React.FC<ChatInputProps> = ({ onSendMessage, isProcessing, onCommandSelect }) => {
+const ChatInput: React.FC<ChatInputProps> = ({ 
+  onSendMessage, 
+  isProcessing, 
+  onCommandSelect 
+}) => {
   const [message, setMessage] = useState('');
   const [isExpanded, setIsExpanded] = useState(false);
   const [showCommands, setShowCommands] = useState(false);
@@ -56,6 +60,7 @@ const ChatInput: React.FC<ChatInputProps> = ({ onSendMessage, isProcessing, onCo
     }
   ];
 
+  // Auto-resize textarea
   useEffect(() => {
     if (textareaRef.current) {
       textareaRef.current.style.height = 'auto';
@@ -63,20 +68,18 @@ const ChatInput: React.FC<ChatInputProps> = ({ onSendMessage, isProcessing, onCo
     }
   }, [message]);
 
+  // Command detection and cursor positioning
   useEffect(() => {
-    // Check for @ symbol in message
     const lastAtIndex = message.lastIndexOf('@');
     
     if (lastAtIndex >= 0 && lastAtIndex >= message.lastIndexOf(' ')) {
       setCommandStartIndex(lastAtIndex);
       setShowCommands(true);
       
-      // Calculate cursor position for popover
       if (textareaRef.current) {
         const textarea = textareaRef.current;
         const textBeforeCursor = message.slice(0, lastAtIndex);
         
-        // Create a temporary element to measure text
         const temp = document.createElement('div');
         temp.style.position = 'absolute';
         temp.style.visibility = 'hidden';
@@ -87,16 +90,14 @@ const ChatInput: React.FC<ChatInputProps> = ({ onSendMessage, isProcessing, onCo
         
         document.body.appendChild(temp);
         
-        // Find the position of the last @ symbol
         const lines = textBeforeCursor.split('\n');
         const lastLine = lines[lines.length - 1];
         const lineHeight = parseInt(window.getComputedStyle(textarea).lineHeight);
         
-        // Calculate position
         const rect = textarea.getBoundingClientRect();
         setCursorPosition({
           top: rect.top + (lines.length - 1) * lineHeight,
-          left: rect.left + lastLine.length * 7 // Approximate character width
+          left: rect.left + lastLine.length * 7
         });
         
         document.body.removeChild(temp);
@@ -106,87 +107,125 @@ const ChatInput: React.FC<ChatInputProps> = ({ onSendMessage, isProcessing, onCo
     }
   }, [message]);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  // Send data to backend
+// Define the possible data shapes
+interface BaseRequestData {
+  query: string;
+}
+
+interface CodeVisualRequestData extends BaseRequestData {
+  component: string;
+}
+
+// Union type for all possible data shapes
+type RequestData = BaseRequestData | CodeVisualRequestData;
+
+// Define the response type (customize this based on your API)
+interface ResponseData {
+  [key: string]: unknown; // Generic response; refine this if you know the structure
+}
+
+const sendData = async (endpoint: string, data: RequestData): Promise<ResponseData | undefined> => {
+  try {
+    const response = await fetch(`http://localhost:8000/math/${endpoint}`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(data),
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error('Error sending data:', error);
+    return undefined;
+  }
+};
+
+  // Handle form submission
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (message.trim() && !isProcessing) {
-      
-      // Check if there's a command in the message
-      const videoMatch = message.match(/@video\s+(.*?)(?:\s|$)/);
-      const visualMatch = message.match(/@visual\s+(.*?)(?:\s|$)/);
-      const interactiveMatch = message.match(/@interactive\s+(.*?)(?:\s|$)/);
-      const codeVisualMatch = message.match(/@codevisual\s+(.*?)(?:\s|$)/);
-      
-      // Log data for Postman testing based on command
-      if (videoMatch) {
-        const videoData = {
-          query: videoMatch[1] || '',
-          timestamp: new Date().toISOString()
-        };
-        console.log('VIDEO COMMAND DATA (copy this):');
-        console.log(JSON.stringify(videoData, null, 2));
-        console.log('Would send to: http://localhost:8080/video');
-      } 
-      
-      if (visualMatch) {
-        const visualData = {
-          query: visualMatch[1] || '',
-          timestamp: new Date().toISOString()
-        };
-        console.log('VISUAL COMMAND DATA (copy this):');
-        console.log(JSON.stringify(visualData, null, 2));
-        console.log('Would send to: http://localhost:8080/visual');
-      }
-      
-      if (interactiveMatch) {
-        const interactiveData = {
-          query: interactiveMatch[1] || '',
-          timestamp: new Date().toISOString()
-        };
-        console.log('INTERACTIVE COMMAND DATA (copy this):');
-        console.log(JSON.stringify(interactiveData, null, 2));
-        console.log('Would send to: http://localhost:8080/interactive');
-      }
-      
-      // Handle CodeVisualizer component
-      if (codeVisualMatch) {
-        const codeVisualizerData = {
-          query: codeVisualMatch[1] || '',
-          component: 'src/components/chat/CodeVisualizer.tsx',
-          timestamp: new Date().toISOString()
-        };
-        console.log('CODE VISUALIZER COMPONENT DATA (copy this):');
-        console.log(JSON.stringify(codeVisualizerData, null, 2));
-        console.log('Would use component: src/components/chat/CodeVisualizer.tsx');
-      }
-      
-      if ((videoMatch || visualMatch || interactiveMatch || codeVisualMatch) && onCommandSelect) {
-        if (videoMatch) {
-          onCommandSelect('video', videoMatch[1] || '');
-        } else if (visualMatch) {
-          onCommandSelect('visual', visualMatch[1] || '');
-        } else if (interactiveMatch) {
-          onCommandSelect('interactive', interactiveMatch[1] || '');
-        } else if (codeVisualMatch) {
-          onCommandSelect('codevisual', codeVisualMatch[1] || '');
+      const commandPatterns = [
+        { 
+          regex: /@video\s+(.+)/s, 
+          endpoint: 'generate-video',
+          processData: (match: string) => ({ query: match })
+        },
+        { 
+          regex: /@visual\s+(.+)/s, 
+          endpoint: 'generate-visual',
+          processData: (match: string) => ({ query: match }) 
+        },
+        { 
+          regex: /@interactive\s+(.+)/s, 
+          endpoint: 'general-agent',
+          processData: (match: string) => ({ query: match }) 
+        },
+        { 
+          regex: /@codevisual\s+(.+)/s, 
+          endpoint: 'codevisual',
+          processData: (match: string) => ({ 
+            query: match,
+            component: 'src/components/chat/CodeVisualizer.tsx' 
+          })
+        }
+      ];
+
+      let processedMessage = message;
+      let matchFound = false;
+
+      for (const pattern of commandPatterns) {
+        const match = message.match(pattern.regex);
+        if (match) {
+          const queryData = pattern.processData(match[1] || '');
+
+          try {
+            // Send data to the respective endpoint
+            await sendData(pattern.endpoint, queryData);
+
+            // If there's an onCommandSelect callback, use it
+            if (onCommandSelect) {
+              onCommandSelect(pattern.endpoint, match[1] || '');
+            }
+
+            // Remove the command prefix for display
+            processedMessage = match[1] || '';
+            matchFound = true;
+            break;
+          } catch (error) {
+            console.error(`Error processing ${pattern.endpoint} command:`, error);
+          }
         }
       }
-      
-      onSendMessage(message);
+
+      // If no command match found, use the original message
+      if (!matchFound) {
+        processedMessage = message;
+      }
+
+      // Send the message 
+      onSendMessage(processedMessage);
       setMessage('');
       setIsExpanded(false);
+      
       if (textareaRef.current) {
         textareaRef.current.style.height = 'auto';
       }
     }
   };
 
+  // Handle command selection from dropdown
   const handleCommandSelect = (command: string) => {
     if (commandStartIndex >= 0) {
       const newMessage = message.substring(0, commandStartIndex) + command + ' ';
       setMessage(newMessage);
       setShowCommands(false);
       
-      // Focus back on textarea and set cursor at the end
       if (textareaRef.current) {
         textareaRef.current.focus();
         const length = newMessage.length;
@@ -206,40 +245,16 @@ const ChatInput: React.FC<ChatInputProps> = ({ onSendMessage, isProcessing, onCo
       >
         {isExpanded && (
           <div className="flex gap-2 mb-2 pb-2 border-b border-border">
-            <button type="button" className="p-2 text-muted-foreground hover:text-foreground rounded-md hover:bg-muted/40 transition-colors">
-              <FileText size={16} />
-            </button>
-            <button type="button" className="p-2 text-muted-foreground hover:text-foreground rounded-md hover:bg-muted/40 transition-colors">
-              <ImageIcon size={16} />
-            </button>
-            <button 
-              type="button" 
-              className="p-2 text-muted-foreground hover:text-foreground rounded-md hover:bg-muted/40 transition-colors"
-              onClick={() => handleCommandSelect('@video ')}
-            >
-              <Video size={16} />
-            </button>
-            <button 
-              type="button" 
-              className="p-2 text-muted-foreground hover:text-foreground rounded-md hover:bg-muted/40 transition-colors"
-              onClick={() => handleCommandSelect('@visual ')}
-            >
-              <PenLine size={16} />
-            </button>
-            <button 
-              type="button" 
-              className="p-2 text-muted-foreground hover:text-foreground rounded-md hover:bg-muted/40 transition-colors"
-              onClick={() => handleCommandSelect('@interactive ')}
-            >
-              <Calculator size={16} />
-            </button>
-            <button 
-              type="button" 
-              className="p-2 text-muted-foreground hover:text-foreground rounded-md hover:bg-muted/40 transition-colors"
-              onClick={() => handleCommandSelect('@codevisual ')}
-            >
-              <Code size={16} />
-            </button>
+            {commandOptions.map((option) => (
+              <button 
+                key={option.id}
+                type="button" 
+                className="p-2 text-muted-foreground hover:text-foreground rounded-md hover:bg-muted/40 transition-colors"
+                onClick={() => handleCommandSelect(option.command)}
+              >
+                {option.icon}
+              </button>
+            ))}
           </div>
         )}
         

@@ -1,0 +1,8 @@
+# This file is used internally by FFMPEG.
+file 'file:D:/Temp/AI_MATH_AGENT/media/videos/manim_visualization/480p15/partial_movie_files/PythagoreanTheoremBasicReliable/uncached_00000.mp4'
+file 'file:D:/Temp/AI_MATH_AGENT/media/videos/manim_visualization/480p15/partial_movie_files/PythagoreanTheoremBasicReliable/uncached_00001.mp4'
+file 'file:D:/Temp/AI_MATH_AGENT/media/videos/manim_visualization/480p15/partial_movie_files/PythagoreanTheoremBasicReliable/uncached_00002.mp4'
+file 'file:D:/Temp/AI_MATH_AGENT/media/videos/manim_visualization/480p15/partial_movie_files/PythagoreanTheoremBasicReliable/uncached_00003.mp4'
+file 'file:D:/Temp/AI_MATH_AGENT/media/videos/manim_visualization/480p15/partial_movie_files/PythagoreanTheoremBasicReliable/uncached_00004.mp4'
+file 'file:D:/Temp/AI_MATH_AGENT/media/videos/manim_visualization/480p15/partial_movie_files/PythagoreanTheoremBasicReliable/uncached_00005.mp4'
+file 'file:D:/Temp/AI_MATH_AGENT/media/videos/manim_visualization/480p15/partial_movie_files/PythagoreanTheoremBasicReliable/uncached_00006.mp4'
